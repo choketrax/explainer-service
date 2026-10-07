@@ -1,0 +1,64 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "explainer-service",
+  "main": "worker/index.ts",
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // Internal-only: no routes, no workers.dev. Callers use Service Bindings
+  // (entrypoint "ExplainerService"). See docs/INTEGRATION.md.
+  "workers_dev": false,
+  "preview_urls": false,
+
+  "durable_objects": {
+    "bindings": [{ "name": "EXPLAINER_CONTAINER", "class_name": "ExplainerContainer" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ExplainerContainer"] }],
+
+  "containers": [
+    {
+      "class_name": "ExplainerContainer",
+      "image": "./container/Dockerfile",
+      "image_build_context": ".",
+      "instance_type": "standard-3", // Chromium + Remotion needs RAM; verify sizing in Phase 2
+      "max_instances": 10 // global render pool bound
+    }
+  ],
+
+  "workflows": [
+    { "name": "explainer-workflow", "binding": "EXPLAINER_WORKFLOW", "class_name": "ExplainerWorkflow" }
+  ],
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "explainer-db",
+      "database_id": "REPLACE_WITH_D1_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  "r2_buckets": [{ "binding": "ASSETS", "bucket_name": "explainer-assets" }],
+
+  "vars": {
+    "R2_ACCOUNT_ID": "REPLACE_ME",
+    "R2_BUCKET_NAME": "explainer-assets",
+    // AI Gateway base URL (Anthropic-compatible route), e.g.
+    // https://gateway.ai.cloudflare.com/v1/<account>/<gateway>/anthropic
+    "AI_GATEWAY_BASE_URL": "REPLACE_ME",
+    "ALLOWED_EGRESS_HOSTS": "registry.npmjs.org,pypi.org,files.pythonhosted.org,en.wikipedia.org,arxiv.org",
+    "PRESIGN_TTL_SECONDS": "900",
+    // Logical model roles -> provider model ids (routed via AI Gateway)
+    "MODEL_RESEARCH": "claude-sonnet-4-5",
+    "MODEL_SCRIPT": "claude-sonnet-4-5",
+    "MODEL_SCENE": "claude-haiku-4-5",
+    "MODEL_QC": "claude-haiku-4-5",
+    "MODEL_QC_ESCALATION": "claude-sonnet-4-5",
+    "MODEL_REVISION": "claude-sonnet-4-5",
+    "DEFAULT_APPROVAL_MODE": "preview"
+  }
+
+  // Secrets (wrangler secret put): AI_GATEWAY_TOKEN, ANTHROPIC_API_KEY (or BYOK in gateway),
+  // R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, EXTERNAL_API_KEYS (JSON, optional)
+}

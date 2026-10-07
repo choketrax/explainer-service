@@ -1,0 +1,8 @@
+node_modules
+.git
+vendor/**/.git
+vendor/**/examples
+vendor/**/node_modules
+.wrangler
+tests
+docs

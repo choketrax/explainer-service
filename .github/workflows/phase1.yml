@@ -1,0 +1,84 @@
+name: Phase 1 Local Proof
+
+on:
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Topic for the explainer video'
+        required: true
+        default: 'Explain AI cost auditing to a small business owner.'
+      targetSeconds:
+        description: 'Target duration in seconds'
+        required: true
+        default: '75'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify pinned commit
+        run: |
+          COMMIT=$(cat vendor/UPSTREAM_COMMIT | tr -d '[:space:]')
+          ACTUAL=$(cd vendor/anything2explainer && git rev-parse HEAD | tr -d '[:space:]')
+          if [ "$COMMIT" != "$ACTUAL" ]; then
+            echo "vendor/anything2explainer is at $ACTUAL but UPSTREAM_COMMIT pins $COMMIT"
+            exit 1
+          fi
+
+      - name: Build Docker Image
+        run: |
+          COMMIT=$(cat vendor/UPSTREAM_COMMIT | tr -d '[:space:]')
+          docker build -f container/Dockerfile --build-arg UPSTREAM_COMMIT=$COMMIT -t explainer-container .
+
+      - name: Start Container
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Use DEEPSEEK_API_KEY & Aider if provided, else Anthropic
+          if [ -n "$DEEPSEEK_API_KEY" ]; then
+            export AGENT_ENV="-e DEEPSEEK_API_KEY=$DEEPSEEK_API_KEY -e AGENT=aider -e MODEL=deepseek-chat"
+          else
+            export AGENT_ENV="-e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY"
+          fi
+          
+          docker run -d --name explainer-local -p 8080:8080 $AGENT_ENV -e HF_HUB_OFFLINE=1 explainer-container
+          sleep 5
+
+      - name: Run Phase 1 Test
+        run: |
+          TOPIC="${{ github.event.inputs.topic || 'Explain AI cost auditing to a small business owner.' }}"
+          TARGET="${{ github.event.inputs.targetSeconds || '75' }}"
+          node scripts/phase1-local.mjs "$TOPIC" $TARGET
+        
+      - name: Validate output file
+        run: |
+          FILE="output/test-001/final/final.mp4"
+          if [ ! -s "$FILE" ]; then
+            echo "Output file $FILE is empty or does not exist."
+            exit 1
+          fi
+          ffprobe -v error -print_format json -show_format -show_streams "$FILE" > probe.json
+          cat probe.json
+          
+      - name: Upload MP4 Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase1-video
+          path: output/test-001/final/final.mp4
+          
+      - name: Container Logs on Failure
+        if: failure()
+        run: docker logs explainer-local
