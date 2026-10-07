@@ -1,0 +1,37 @@
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+      
+      - name: Clone Anything2Explainer manually (due to submodule auth issues)
+        run: |
+          mkdir -p vendor/anything2explainer
+          git clone https://github.com/Vincentwei1021/anything2explainer.git vendor/anything2explainer
+          cd vendor/anything2explainer
+          # Checkout the pinned commit
+          git checkout $(cat ../UPSTREAM_COMMIT)
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Deploy Worker and Container
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy

@@ -34,7 +34,7 @@
     {
       "binding": "DB",
       "database_name": "explainer-db",
-      "database_id": "REPLACE_WITH_D1_ID",
+      "database_id": "4a471fd3-1228-48a1-a05a-35838fa56ed2",
       "migrations_dir": "migrations"
     }
   ],
@@ -42,7 +42,7 @@
   "r2_buckets": [{ "binding": "ASSETS", "bucket_name": "explainer-assets" }],
 
   "vars": {
-    "R2_ACCOUNT_ID": "REPLACE_ME",
+    "R2_ACCOUNT_ID": "56e8d68c2c46720b0d77df12d63da7e2",
     "R2_BUCKET_NAME": "explainer-assets",
     // AI Gateway base URL (Anthropic-compatible route), e.g.
     // https://gateway.ai.cloudflare.com/v1/<account>/<gateway>/anthropic
