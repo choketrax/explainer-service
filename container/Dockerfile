@@ -54,7 +54,10 @@ ENV HF_HUB_OFFLINE=1 \
 COPY container/runner /opt/runner
 
 # Unprivileged user (Claude Code refuses --dangerously-skip-permissions as root)
-RUN useradd -m -u 10001 agent && mkdir -p /work /home/agent/.claude && chown -R agent:agent /work /home/agent /opt/a2e/template
+RUN useradd -m -u 10001 agent && \
+    cp -r /root/.npm /home/agent/.npm && \
+    mkdir -p /work /home/agent/.claude && \
+    chown -R agent:agent /work /home/agent /opt/a2e/template
 USER agent
 WORKDIR /work
 EXPOSE 8080
