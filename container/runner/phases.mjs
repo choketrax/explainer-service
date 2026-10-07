@@ -38,7 +38,7 @@ async function agent(cwd, model, prompt, { maxTurns = 60, timeoutMs = 45 * 60 * 
       "--model", model.startsWith("deepseek") ? `openai/${model}` : model,
       "--message", prompt,
       "--yes-always",
-      "--no-auto-commits",
+      "--no-auto-commits", "--no-git",
       "--read", SKILL,
       ...files.flatMap(f => ["--file", f])
     ];
