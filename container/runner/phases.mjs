@@ -14,8 +14,8 @@ function sh(cmd, args, { cwd, env = {}, timeoutMs = 60 * 60 * 1000, input } = {}
     const p = spawn(cmd, args, { cwd, env: { ...process.env, ...env }, stdio: ["pipe", "pipe", "pipe"] });
     let out = "", err = "";
     const timer = setTimeout(() => { p.kill("SIGKILL"); err += "\n[runner] timeout"; resolve({ code: 124, out, err, timedOut: true }); }, timeoutMs);
-    p.stdout.on("data", (d) => (out += d));
-    p.stderr.on("data", (d) => (err += d));
+    p.stdout.on("data", (d) => { out += d; console.log(String(d)); });
+    p.stderr.on("data", (d) => { err += d; console.error(String(d)); });
     p.on("close", (code) => { clearTimeout(timer); resolve({ code, out, err, timedOut: false }); });
     if (input) p.stdin.end(input); else p.stdin.end();
   });
