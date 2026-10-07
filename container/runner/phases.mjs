@@ -29,7 +29,7 @@ function fail(code, message, extra = {}) {
 }
 
 /** Run the coding agent (Claude Code or Aider). */
-async function agent(cwd, model, prompt, { maxTurns = 60, timeoutMs = 45 * 60 * 1000 } = {}) {
+async function agent(cwd, model, prompt, { maxTurns = 60, timeoutMs = 45 * 60 * 1000, files = [] } = {}) {
   const agentCli = process.env.AGENT || "claude";
 
   if (agentCli === "aider") {
@@ -39,7 +39,8 @@ async function agent(cwd, model, prompt, { maxTurns = 60, timeoutMs = 45 * 60 * 
       "--message", prompt,
       "--yes-always",
       "--no-auto-commits",
-      "--read", SKILL
+      "--read", SKILL,
+      ...files.flatMap(f => ["--file", f])
     ];
     const r = await sh("aider", args, { cwd, timeoutMs });
     let usage = { inputTokens: 0, outputTokens: 0 };
@@ -157,7 +158,7 @@ export async function runPhase(work, body) {
 
     switch (phase) {
       case "research": {
-        const r = await agent(proj, model, `${pre}\nPHASE: research. Produce the research brief per reference/research-brief.md. Write ./research/research.md and ./research/sources.json (every figure/name/year needs a source URL).${revision}`);
+        const r = await agent(proj, model, `${pre}\nPHASE: research. Produce the research brief per reference/research-brief.md. Write ./research/research.md and ./research/sources.json (every figure/name/year needs a source URL).${revision}`, { files: ["research/research.md", "research/sources.json"] });
         add(r.usage);
         if (!r.ok || !exists(`${proj}/research/research.md`)) return fail(r.timedOut ? "LLM_TIMEOUT" : "RESEARCH_FAILED", r.err, { usage });
         return done({ artifacts: [
@@ -166,7 +167,7 @@ export async function runPhase(work, body) {
         ] });
       }
       case "script": {
-        const r = await agent(proj, model, `${pre}\nPHASE: narration script. Follow reference/narration-guidance.md. Using ./research/research.md write the narration to ./script/narration.md (blank-line separated paragraphs, one per shot). Target ${brief.targetSeconds}s.${revision}`);
+        const r = await agent(proj, model, `${pre}\nPHASE: narration script. Follow reference/narration-guidance.md. Using ./research/research.md write the narration to ./script/narration.md (blank-line separated paragraphs, one per shot). Target ${brief.targetSeconds}s.${revision}`, { files: ["script/narration.md"] });
         add(r.usage);
         if (!r.ok || !exists(`${proj}/script/narration.md`)) return fail(r.timedOut ? "LLM_TIMEOUT" : "RESEARCH_FAILED", r.err || "narration missing", { usage });
         return done({ artifacts: [art(work, `${proj}/script/narration.md`, "script/narration.md", "script", "text/markdown")] });
@@ -181,7 +182,7 @@ export async function runPhase(work, body) {
         return done({ artifacts: audio ? [art(work, audio, `audio/${path.basename(audio)}`, "audio", "audio/wav")] : [] });
       }
       case "storyboard": {
-        const r = await agent(proj, model, `${pre}\nPHASE: storyboard + timeline. Follow reference/narration-storyboard.md. Using the narration and the generated audio timing, produce ./script/storyboard.json (shots, chapters, frame ranges) and update src/common/timeline.ts accordingly.${revision}`);
+        const r = await agent(proj, model, `${pre}\nPHASE: storyboard + timeline. Follow reference/narration-storyboard.md. Using the narration and the generated audio timing, produce ./script/storyboard.json (shots, chapters, frame ranges) and update src/common/timeline.ts accordingly.${revision}`, { files: ["script/storyboard.json", "src/common/timeline.ts"] });
         add(r.usage);
         const sb = findNewest(`${proj}/script`, /storyboard.*\.(json|md)$/i);
         if (!r.ok || !sb) return fail(r.timedOut ? "LLM_TIMEOUT" : "REMOTION_BUILD_FAILED", r.err || "storyboard missing", { usage });
@@ -197,11 +198,11 @@ export async function runPhase(work, body) {
       case "scene_qc": {
         // cheap QC first; failed QC escalates once to the stronger model (Worker-provided role mapping)
         const qcPrompt = (extra = "") => `${pre}\nPHASE: scene QC. Follow reference/agent-qc-rules.md. Render stills (scripts/still.sh), check against the hard rules, and write ./qc/qc.json as {"passed":boolean,"issues":[...]} . ${extra}`;
-        let r = await agent(proj, models.qc_model || model, qcPrompt(), { maxTurns: 120 });
+        let r = await agent(proj, models.qc_model || model, qcPrompt(), { maxTurns: 120, files: ["qc/qc.json"] });
         add(r.usage);
         let qc = readJson(`${proj}/qc/qc.json`);
         if (r.ok && qc && qc.passed === false) {
-          const fix = await agent(proj, models.qc_escalation_model || model, `${pre}\nPHASE: fix. Follow reference/agent-qc-rules.md. Fix every issue in ./qc/qc.json, rebuild with tsc, then rewrite ./qc/qc.json.`, { maxTurns: 200 });
+          const fix = await agent(proj, models.qc_escalation_model || model, `${pre}\nPHASE: fix. Follow reference/agent-qc-rules.md. Fix every issue in ./qc/qc.json, rebuild with tsc, then rewrite ./qc/qc.json.`, { maxTurns: 200, files: ["qc/qc.json"] });
           add(fix.usage);
           qc = readJson(`${proj}/qc/qc.json`);
         }
@@ -247,7 +248,7 @@ export async function runPhase(work, body) {
         const manifest = path.join(proj, "qc", "manifest.json");
         fs.writeFileSync(manifest, JSON.stringify({ topic: brief.topic, language: brief.language, ...info, generatedAt: new Date().toISOString() }));
         // Subtitles (best effort, non-fatal): cheap model derives WebVTT from the project's timeline/subtitle data.
-        const s = await agent(proj, models.qc_model || model, `${pre}\nPHASE: subtitles. From the project's subtitle/timeline data (src/common/*) write ./qc/subtitles.vtt as valid WebVTT at 30 fps. No other changes.`, { maxTurns: 30, timeoutMs: 10 * 60 * 1000 });
+        const s = await agent(proj, models.qc_model || model, `${pre}\nPHASE: subtitles. From the project's subtitle/timeline data (src/common/*) write ./qc/subtitles.vtt as valid WebVTT at 30 fps. No other changes.`, { maxTurns: 30, timeoutMs: 10 * 60 * 1000, files: ["qc/subtitles.vtt"] });
         add(s.usage);
         const artifacts = [
           art(work, qcPath, "metadata/qc.json", "qc_final", "application/json"),
