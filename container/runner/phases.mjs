@@ -35,7 +35,7 @@ async function agent(cwd, model, prompt, { maxTurns = 60, timeoutMs = 45 * 60 * 
   if (agentCli === "aider") {
     // Aider configuration
     const args = [
-      "--model", model.startsWith("deepseek") ? `deepseek/${model}` : model,
+      "--model", model.startsWith("deepseek") ? `openai/${model}` : model,
       "--message", prompt,
       "--yes-always",
       "--no-auto-commits",

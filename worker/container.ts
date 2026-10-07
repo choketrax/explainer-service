@@ -18,6 +18,15 @@ export class ExplainerContainer extends Container<Env> {
   enableInternet = false;
 
   static outboundByHost: Record<string, (req: Request, env: Env, ctx: ExecutionContext) => Promise<Response>> = {
+    [GATEWAY_HOST]: async (req, env) => {
+      const src = new URL(req.url);
+      const dst = new URL(env.AI_GATEWAY_BASE_URL.replace(/\/$/, "") + src.pathname + src.search);
+      const headers = new Headers(req.headers);
+      headers.set("Authorization", `Bearer ${env.DEEPSEEK_API_KEY}`);
+      headers.set("cf-aig-authorization", `Bearer ${env.AI_GATEWAY_TOKEN}`);
+      headers.delete("host");
+      return fetch(new Request(dst, { method: req.method, headers, body: req.body, redirect: "manual" }));
+    },
     "api.deepseek.com": async (req, env) => {
       const src = new URL(req.url);
       const dst = new URL(env.AI_GATEWAY_BASE_URL.replace(/\/$/, "") + src.pathname + src.search);

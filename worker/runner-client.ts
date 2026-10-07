@@ -31,6 +31,8 @@ export async function startContainer(env: Env, jobId: string, prefix: string, in
         ANTHROPIC_API_KEY: "sk-placeholder-injected-by-worker",
         AGENT: "aider",
         DEEPSEEK_API_KEY: "placeholder",
+        OPENAI_API_BASE: GATEWAY_URL + "/v1",
+        OPENAI_API_KEY: "placeholder",
         DISABLE_TELEMETRY: "1",
         CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1",
         WORKDIR: "/work",
@@ -61,7 +63,10 @@ export async function runStage(
   const res = await stub.fetch(new Request("http://c/stage", {
     method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body),
   }));
-  if (!res.ok) throw new ExplainerError("INTERNAL", `container stage http ${res.status}`, true);
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new ExplainerError("INTERNAL", `container stage http ${res.status}: ${text}`, true);
+  }
   const result = (await res.json()) as StageResult;
 
   // Persist artifacts (streamed container -> R2; never exposes credentials to container).
