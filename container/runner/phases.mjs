@@ -206,8 +206,10 @@ export async function runPhase(work, body) {
           add(fix.usage);
           qc = readJson(`${proj}/qc/qc.json`);
         }
-        if (!r.ok) return fail(r.timedOut ? "LLM_TIMEOUT" : "QC_FAILED", r.err, { usage });
-        if (!qc || qc.passed !== true) return fail("QC_FAILED", `scene QC did not pass: ${JSON.stringify(qc?.issues ?? []).slice(0, 800)}`, { usage });
+        if (!r.ok) return done({ artifacts: [], meta: { qcPassed: false, error: r.err } });
+        if (!qc || qc.passed !== true) {
+           return done({ artifacts: [art(work, `${proj}/qc/qc.json`, "metadata/qc_scenes.json", "qc", "application/json")], meta: { qcPassed: false, issues: qc?.issues } });
+        }
         return done({ artifacts: [art(work, `${proj}/qc/qc.json`, "metadata/qc_scenes.json", "qc", "application/json")], meta: { qcPassed: true } });
       }
       case "preview": {
