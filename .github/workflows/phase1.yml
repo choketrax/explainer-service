@@ -19,8 +19,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - name: Clone Anything2Explainer
+        run: |
+          git clone https://github.com/Vincentwei1021/anything2explainer.git vendor/anything2explainer
+          cd vendor/anything2explainer
+          COMMIT=$(cat ../UPSTREAM_COMMIT | tr -d '[:space:]')
+          git checkout $COMMIT
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
