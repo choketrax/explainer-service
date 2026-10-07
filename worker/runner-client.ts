@@ -29,6 +29,8 @@ export async function startContainer(env: Env, jobId: string, prefix: string, in
         // Placeholder key: the real credential is injected by the Worker's outbound handler.
         ANTHROPIC_BASE_URL: GATEWAY_URL,
         ANTHROPIC_API_KEY: "sk-placeholder-injected-by-worker",
+        AGENT: "aider",
+        DEEPSEEK_API_KEY: "placeholder",
         DISABLE_TELEMETRY: "1",
         CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1",
         WORKDIR: "/work",

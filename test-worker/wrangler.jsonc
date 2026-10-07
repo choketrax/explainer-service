@@ -1,0 +1,8 @@
+{
+  "name": "explainer-test-worker",
+  "main": "index.ts",
+  "compatibility_date": "2025-09-01",
+  "services": [
+    { "binding": "EXPLAINER", "service": "explainer-service", "entrypoint": "ExplainerService" }
+  ]
+}

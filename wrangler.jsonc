@@ -44,18 +44,16 @@
   "vars": {
     "R2_ACCOUNT_ID": "56e8d68c2c46720b0d77df12d63da7e2",
     "R2_BUCKET_NAME": "explainer-assets",
-    // AI Gateway base URL (Anthropic-compatible route), e.g.
-    // https://gateway.ai.cloudflare.com/v1/<account>/<gateway>/anthropic
-    "AI_GATEWAY_BASE_URL": "REPLACE_ME",
+    "AI_GATEWAY_BASE_URL": "https://api.deepseek.com",
     "ALLOWED_EGRESS_HOSTS": "registry.npmjs.org,pypi.org,files.pythonhosted.org,en.wikipedia.org,arxiv.org",
     "PRESIGN_TTL_SECONDS": "900",
     // Logical model roles -> provider model ids (routed via AI Gateway)
-    "MODEL_RESEARCH": "claude-sonnet-4-5",
-    "MODEL_SCRIPT": "claude-sonnet-4-5",
-    "MODEL_SCENE": "claude-haiku-4-5",
-    "MODEL_QC": "claude-haiku-4-5",
-    "MODEL_QC_ESCALATION": "claude-sonnet-4-5",
-    "MODEL_REVISION": "claude-sonnet-4-5",
+    "MODEL_RESEARCH": "deepseek-chat",
+    "MODEL_SCRIPT": "deepseek-chat",
+    "MODEL_SCENE": "deepseek-chat",
+    "MODEL_QC": "deepseek-chat",
+    "MODEL_QC_ESCALATION": "deepseek-chat",
+    "MODEL_REVISION": "deepseek-chat",
     "DEFAULT_APPROVAL_MODE": "preview"
   }
 
