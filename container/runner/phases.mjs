@@ -39,8 +39,7 @@ async function agent(cwd, model, prompt, { maxTurns = 60, timeoutMs = 45 * 60 * 
       "--message", prompt,
       "--yes-always",
       "--no-auto-commits",
-      "--read", SKILL,
-      "--read", `${A2E}/reference`
+      "--read", SKILL
     ];
     const r = await sh("aider", args, { cwd, timeoutMs });
     let usage = { inputTokens: 0, outputTokens: 0 };
