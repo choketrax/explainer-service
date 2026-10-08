@@ -71,7 +71,22 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method === "POST" && url.pathname === "/stage") {
       const body = JSON.parse((await readBody(req)).toString("utf8"));
-      res.writeHead(200, { "content-type": "application/json" }); const p = setInterval(() => res.write(" "), 15000); try { const result = await runPhase(WORK, body); res.end(JSON.stringify(result)); } finally { clearInterval(p); }; return;
+      if (global.currentStagePromise) return send(400, { error: "stage already running" });
+      global.currentStageStatus = { state: "running" };
+      global.currentStagePromise = runPhase(WORK, body)
+        .then(result => { global.currentStageStatus = { state: "done", result }; })
+        .catch(err => { 
+          global.currentStageStatus = { 
+            state: "done", 
+            result: { ok: false, usage: { inputTokens: 0, outputTokens: 0 }, renderSeconds: 0, wallSeconds: 0, artifacts: [], error: { code: "INTERNAL", message: String(err?.stack || err?.message || err) } } 
+          }; 
+        })
+        .finally(() => { global.currentStagePromise = null; });
+      return send(200, { ok: true });
+    }
+    if (req.method === "GET" && url.pathname === "/stage/status") {
+      if (!global.currentStageStatus) return send(404, { error: "no stage active" });
+      return send(200, global.currentStageStatus);
     }
     if (req.method === "GET" && url.pathname === "/file") {
       const abs = inside(url.searchParams.get("path") || "");

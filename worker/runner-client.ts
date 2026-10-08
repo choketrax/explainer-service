@@ -60,14 +60,33 @@ export async function runStage(
   env: Env, jobId: string, tenantId: string, prefix: string, body: Record<string, unknown>,
 ): Promise<StageResult> {
   const stub = stubFor(env, jobId);
-  const res = await stub.fetch(new Request("http://c/stage", {
+  const startRes = await stub.fetch(new Request("http://c/stage", {
     method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body),
   }));
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    console.log(`[STAGE ERROR] container stage http ${res.status}: ${text}`); throw new ExplainerError("INTERNAL", `container stage http ${res.status}: ${text}`, true);
+  if (!startRes.ok) {
+    const text = await startRes.text().catch(() => "");
+    console.log(`[STAGE ERROR] container stage start http ${startRes.status}: ${text}`); throw new ExplainerError("INTERNAL", `container stage start http ${startRes.status}: ${text}`, true);
   }
-  const result = (await res.json()) as StageResult;
+
+  let result: StageResult | null = null;
+  while (true) {
+    await new Promise((r) => setTimeout(r, 10000));
+    const statusRes = await stub.fetch(new Request("http://c/stage/status"));
+    if (!statusRes.ok) {
+      console.log(`[STAGE ERROR] container status http ${statusRes.status}`); continue;
+    }
+    const status = await statusRes.json() as any;
+    if (status.state === "done") {
+      result = status.result as StageResult;
+      // wipe the state for the next phase
+      globalThis.currentStageStatus = null; // not actually global inside DO, but handled if needed.
+      // Wait, server.mjs doesn't wipe status.
+      // Next POST /stage will wipe it.
+      break;
+    }
+  }
+
+  if (!result) throw new ExplainerError("INTERNAL", "Missing stage result", true);
 
   // Persist artifacts (streamed container -> R2; never exposes credentials to container).
   for (const a of result.artifacts ?? []) {
