@@ -77,14 +77,14 @@ export async function runStage(
     if (!f.ok || !f.body) throw new ExplainerError("R2_UPLOAD_FAILED", `read ${a.path}: ${f.status}`, true);
     const len = Number(f.headers.get("content-length") ?? "0");
     // R2 put of a stream needs known length; container sets content-length.
-    await env.ASSETS.put(key, f.body as ReadableStream, { httpMetadata: { contentType: a.contentType } });
+    await env.ASSETS.put(key, await f.arrayBuffer(), { httpMetadata: { contentType: a.contentType } });
     (a as any).bytes = len;
   }
 
   // Snapshot workspace (ephemeral container storage -> short-lived R2 object, lifecycle-expired).
   const snap = await stub.fetch(new Request("http://c/workspace/snapshot"));
   if (snap.ok && snap.body) {
-    await env.ASSETS.put(snapshotKey(prefix), snap.body as ReadableStream, {
+    await env.ASSETS.put(snapshotKey(prefix), await snap.arrayBuffer(), {
       httpMetadata: { contentType: "application/x-tar" },
     });
   }
