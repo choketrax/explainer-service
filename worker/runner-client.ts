@@ -65,7 +65,7 @@ export async function runStage(
   }));
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new ExplainerError("INTERNAL", `container stage http ${res.status}: ${text}`, true);
+    console.log(`[STAGE ERROR] container stage http ${res.status}: ${text}`); throw new ExplainerError("INTERNAL", `container stage http ${res.status}: ${text}`, true);
   }
   const result = (await res.json()) as StageResult;
 

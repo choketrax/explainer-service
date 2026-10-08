@@ -82,7 +82,7 @@ const server = http.createServer(async (req, res) => {
     send(404, { error: "not found" });
   } catch (e) {
     console.error(e);
-    send(500, { error: String(e?.message || e) });
+    send(200, { ok: false, usage: { inputTokens: 0, outputTokens: 0 }, renderSeconds: 0, wallSeconds: 0, artifacts: [], error: { code: "INTERNAL", message: String(e?.stack || e?.message || e) } });
   }
 });
 server.requestTimeout = 0; // stages can run for an hour+
