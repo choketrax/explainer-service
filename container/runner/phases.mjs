@@ -9,7 +9,7 @@ const A2E = process.env.A2E_DIR || "/opt/a2e";
 const SKILL = `${A2E}/SKILL.md`;
 const SCRIPTS_DIR_NAME = "scripts";
 
-function sh(cmd, args, { cwd, env = {}, timeoutMs = 3 * 60 * 1000, input } = {}) {
+function sh(cmd, args, { cwd, env = {}, timeoutMs = 45 * 60 * 1000, input } = {}) {
   return new Promise((resolve) => {
     const p = spawn(cmd, args, { cwd, env: { ...process.env, ...env, PYTHONUNBUFFERED: "1" }, stdio: ["pipe", "pipe", "pipe"] });
     let out = "", err = "";
@@ -29,7 +29,7 @@ function fail(code, message, extra = {}) {
 }
 
 /** Run the coding agent (Claude Code or Aider). */
-async function agent(cwd, model, prompt, { maxTurns = 60, timeoutMs = 3 * 60 * 1000, files = [] } = {}) {
+async function agent(cwd, model, prompt, { maxTurns = 60, timeoutMs = 45 * 60 * 1000, files = [] } = {}) {
   const agentCli = process.env.AGENT || "claude";
 
   if (agentCli === "aider") {
