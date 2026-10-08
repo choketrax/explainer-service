@@ -31,7 +31,7 @@ export async function startContainer(env: Env, jobId: string, prefix: string, in
         ANTHROPIC_API_KEY: "sk-placeholder-injected-by-worker",
         AGENT: "aider",
         DEEPSEEK_API_KEY: "placeholder",
-        OPENAI_API_BASE: "http://api.deepseek.com/v1",
+        OPENAI_API_BASE: "https://api.deepseek.com/v1", REQUESTS_CA_BUNDLE: "/etc/ssl/certs/ca-certificates.crt",
         OPENAI_API_KEY: "placeholder",
         DISABLE_TELEMETRY: "1",
         CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1",

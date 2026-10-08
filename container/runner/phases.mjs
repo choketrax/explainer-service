@@ -9,13 +9,13 @@ const A2E = process.env.A2E_DIR || "/opt/a2e";
 const SKILL = `${A2E}/SKILL.md`;
 const SCRIPTS_DIR_NAME = "scripts";
 
-function sh(cmd, args, { cwd, env = {}, timeoutMs = 60 * 60 * 1000, input } = {}) {
+function sh(cmd, args, { cwd, env = {}, timeoutMs = 3 * 60 * 1000, input } = {}) {
   return new Promise((resolve) => {
     const p = spawn(cmd, args, { cwd, env: { ...process.env, ...env, PYTHONUNBUFFERED: "1" }, stdio: ["pipe", "pipe", "pipe"] });
     let out = "", err = "";
     const timer = setTimeout(() => { p.kill("SIGKILL"); err += "\n[runner] timeout"; resolve({ code: 124, out, err, timedOut: true }); }, timeoutMs);
-    p.stdout.on("data", (d) => { out += d; console.log(String(d)); });
-    p.stderr.on("data", (d) => { err += d; console.error(String(d)); });
+    p.stdout.on("data", (d) => { out += d;  });
+    p.stderr.on("data", (d) => { err += d;  });
     p.on("error", (err) => { console.error("SPAWN ERROR", err); }); p.on("close", (code) => { clearTimeout(timer); resolve({ code, out, err, timedOut: false }); });
     if (input) p.stdin.end(input); else p.stdin.end();
   });
@@ -29,7 +29,7 @@ function fail(code, message, extra = {}) {
 }
 
 /** Run the coding agent (Claude Code or Aider). */
-async function agent(cwd, model, prompt, { maxTurns = 60, timeoutMs = 45 * 60 * 1000, files = [] } = {}) {
+async function agent(cwd, model, prompt, { maxTurns = 60, timeoutMs = 3 * 60 * 1000, files = [] } = {}) {
   const agentCli = process.env.AGENT || "claude";
 
   if (agentCli === "aider") {
