@@ -14,7 +14,7 @@ const GATEWAY_HOST = "gateway.internal"; // virtual host the in-container agent 
  */
 export class ExplainerContainer extends Container<Env> {
   defaultPort = 8080;
-  sleepAfter = "20m"; // safety net only; the Workflow destroys the container explicitly
+  sleepAfter = "2h"; // safety net only; the Workflow destroys the container explicitly
   enableInternet = false;
 
   static outboundByHost: Record<string, (req: Request, env: Env, ctx: ExecutionContext) => Promise<Response>> = {
