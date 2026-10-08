@@ -71,7 +71,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method === "POST" && url.pathname === "/stage") {
       const body = JSON.parse((await readBody(req)).toString("utf8"));
-      return send(200, await runPhase(WORK, body));
+      res.writeHead(200, { "content-type": "application/json" }); const p = setInterval(() => res.write(" "), 15000); try { const result = await runPhase(WORK, body); res.end(JSON.stringify(result)); } finally { clearInterval(p); }; return;
     }
     if (req.method === "GET" && url.pathname === "/file") {
       const abs = inside(url.searchParams.get("path") || "");
