@@ -11,6 +11,9 @@ function client(env: Env) {
 }
 
 async function presign(env: Env, method: "GET" | "PUT", key: string, ttl?: number, contentType?: string): Promise<string> {
+  if (!env.R2_ACCESS_KEY_ID) {
+    return `https://storage.local/${key.split("/").map(encodeURIComponent).join("/")}`;
+  }
   const url = new URL(`https://${env.R2_BUCKET_NAME}.${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${key.split("/").map(encodeURIComponent).join("/")}`);
   url.searchParams.set("X-Amz-Expires", String(ttl ?? Number(env.PRESIGN_TTL_SECONDS || "900")));
   const headers: Record<string, string> = {};
