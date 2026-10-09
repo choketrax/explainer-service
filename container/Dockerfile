@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Python deps (edge-tts pinned: it tracks a Microsoft endpoint and breaks across upgrades)
 RUN pip install 'edge-tts==7.2.8' numpy pillow scipy kokoro soundfile aider-chat
 # Coding agent (Claude Code). No credentials baked in: the Worker injects them on the wire via AI Gateway.
-RUN npm install -g @anthropic-ai/claude-code
+RUN npm install -g @anthropic-ai/claude-code typescript
 # ---- Pinned Anything2Explainer (vendor/UPSTREAM_COMMIT) ----
 COPY vendor/anything2explainer /opt/a2e
 ARG UPSTREAM_COMMIT
