@@ -49,14 +49,14 @@
     "PRESIGN_TTL_SECONDS": "900",
     // Logical model roles -> provider model ids (routed via AI Gateway)
     "MODEL_RESEARCH": "deepseek-chat",
-    "MODEL_SCRIPT": "deepseek-chat",
-    "MODEL_SCENE": "deepseek-chat",
-    "MODEL_QC": "deepseek-chat",
-    "MODEL_QC_ESCALATION": "deepseek-chat",
-    "MODEL_REVISION": "deepseek-chat",
+    "MODEL_SCRIPT": "gpt-4o",
+    "MODEL_SCENE": "gpt-4o",
+    "MODEL_QC": "gpt-4o",
+    "MODEL_QC_ESCALATION": "gpt-4o",
+    "MODEL_REVISION": "gpt-4o",
     "DEFAULT_APPROVAL_MODE": "preview"
   }
 
-  // Secrets (wrangler secret put): AI_GATEWAY_TOKEN, ANTHROPIC_API_KEY (or BYOK in gateway),
+  // Secrets (wrangler secret put): AI_GATEWAY_TOKEN, ANTHROPIC_API_KEY, OPENAI_API_KEY, DEEPSEEK_API_KEY
   // R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, EXTERNAL_API_KEYS (JSON, optional)
 }
