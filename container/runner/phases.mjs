@@ -105,7 +105,7 @@ async function createProject(work, brief) {
   if (r.code !== 0) throw Object.assign(new Error(tail(r.err || r.out)), { code: "REMOTION_BUILD_FAILED" });
     try {
       fs.rmSync(path.join(proj, "node_modules"), { recursive: true, force: true });
-      fs.symlinkSync(path.join(A2E, "template", "node_modules"), path.join(proj, "node_modules"), "dir");
+      fs.cpSync(path.join(A2E, "template", "node_modules"), path.join(proj, "node_modules"), { recursive: true });
     } catch (e) {}
   // Language/background config per upstream guidance
   const cfg = path.join(proj, "src", "config.ts");
