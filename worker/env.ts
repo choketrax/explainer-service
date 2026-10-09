@@ -24,6 +24,7 @@ export interface Env {
   AI_GATEWAY_TOKEN: string;
   ANTHROPIC_API_KEY: string;
   DEEPSEEK_API_KEY: string;
+  OPENAI_API_KEY: string;
   R2_ACCESS_KEY_ID: string;
   R2_SECRET_ACCESS_KEY: string;
   EXTERNAL_API_KEYS?: string;

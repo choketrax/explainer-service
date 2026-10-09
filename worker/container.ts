@@ -36,6 +36,15 @@ export class ExplainerContainer extends Container<Env> {
       headers.delete("host");
       const proxyRes = await fetch(new Request(dst, { method: req.method, headers, body: req.body, redirect: "manual" })); console.log(`[PROXY] ${req.method} ${dst} -> ${proxyRes.status}`); if (!proxyRes.ok) console.log(`[PROXY ERR]`, await proxyRes.clone().text()); return proxyRes;
     },
+    "api.openai.com": async (req, env) => {
+      const src = new URL(req.url);
+      const dst = new URL(env.AI_GATEWAY_BASE_URL.replace(/\/$/, "") + src.pathname + src.search);
+      const headers = new Headers(req.headers);
+      headers.set("Authorization", `Bearer ${env.OPENAI_API_KEY}`);
+      headers.set("cf-aig-authorization", `Bearer ${env.AI_GATEWAY_TOKEN}`);
+      headers.delete("host");
+      const proxyRes = await fetch(new Request(dst, { method: req.method, headers, body: req.body, redirect: "manual" })); console.log(`[PROXY] ${req.method} ${dst} -> ${proxyRes.status}`); if (!proxyRes.ok) console.log(`[PROXY ERR]`, await proxyRes.clone().text()); return proxyRes;
+    },
   };
 
   /** Default for any other host: allowlist or deny. */
