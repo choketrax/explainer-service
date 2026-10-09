@@ -71,7 +71,13 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method === "POST" && url.pathname === "/stage") {
       const body = JSON.parse((await readBody(req)).toString("utf8"));
-      if (global.currentStagePromise) return send(400, { error: "stage already running" });
+      if (global.currentStagePromise) {
+        if (global.currentStageBody?.phase === body.phase) {
+          return send(200, { ok: true }); // idempotent resume
+        }
+        return send(400, { error: "stage already running" });
+      }
+      global.currentStageBody = body;
       global.currentStageStatus = { state: "running" };
       global.currentStagePromise = runPhase(WORK, body)
         .then(result => { global.currentStageStatus = { state: "done", result }; })
@@ -81,7 +87,7 @@ const server = http.createServer(async (req, res) => {
             result: { ok: false, usage: { inputTokens: 0, outputTokens: 0 }, renderSeconds: 0, wallSeconds: 0, artifacts: [], error: { code: "INTERNAL", message: String(err?.stack || err?.message || err) } } 
           }; 
         })
-        .finally(() => { global.currentStagePromise = null; });
+        .finally(() => { global.currentStagePromise = null; global.currentStageBody = null; });
       return send(200, { ok: true });
     }
     if (req.method === "GET" && url.pathname === "/stage/status") {

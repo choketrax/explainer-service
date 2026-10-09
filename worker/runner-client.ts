@@ -71,7 +71,13 @@ export async function runStage(
   let result: StageResult | null = null;
   while (true) {
     await new Promise((r) => setTimeout(r, 10000));
-    const statusRes = await stub.fetch(new Request("http://c/stage/status"));
+    let statusRes;
+    try {
+      statusRes = await stub.fetch(new Request("http://c/stage/status"));
+    } catch (e) {
+      console.warn(`[STAGE ERROR] transient network error during status poll:`, String(e));
+      continue;
+    }
     if (!statusRes.ok) {
       console.log(`[STAGE ERROR] container status http ${statusRes.status}`); continue;
     }
@@ -79,9 +85,7 @@ export async function runStage(
     if (status.state === "done") {
       result = status.result as StageResult;
       // wipe the state for the next phase
-      globalThis.currentStageStatus = null; // not actually global inside DO, but handled if needed.
-      // Wait, server.mjs doesn't wipe status.
-      // Next POST /stage will wipe it.
+      globalThis.currentStageStatus = null; 
       break;
     }
   }
