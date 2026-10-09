@@ -8,7 +8,7 @@
 
   // Internal-only: no routes, no workers.dev. Callers use Service Bindings
   // (entrypoint "ExplainerService"). See docs/INTEGRATION.md.
-  "workers_dev": false,
+  "workers_dev": true,
   "preview_urls": false,
 
   "durable_objects": {
