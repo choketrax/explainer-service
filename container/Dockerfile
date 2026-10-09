@@ -25,6 +25,10 @@ RUN sed -i 's/npx remotion/node node_modules\/.bin\/remotion/g' /opt/a2e/templat
     sed -i 's/npm install --silent && npx tsc --noEmit && //g' /opt/a2e/template/scripts/new_project.sh
 # Pre-warm npm cache from the template so `npm install` in new projects works with egress disabled.
 RUN cd /opt/a2e/template && npm install --no-audit --no-fund && rm -rf node_modules/.cache
+# Completely neuter npm and npx to prevent Remotion auto-installs and Aider hallucinations.
+RUN mkdir -p /opt/fakebin && echo '#!/bin/sh' > /opt/fakebin/npm && echo 'exit 0' >> /opt/fakebin/npm && chmod +x /opt/fakebin/npm && \
+    echo '#!/bin/sh' > /opt/fakebin/npx && echo 'exit 0' >> /opt/fakebin/npx && chmod +x /opt/fakebin/npx
+ENV PATH="/opt/fakebin:$PATH"
 # Pre-bake Kokoro model + voice + spaCy model so runtime needs no network.
 ENV HF_HOME=/opt/hf
 RUN python3 - <<'PY'
