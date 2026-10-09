@@ -50,10 +50,10 @@
     // Logical model roles -> provider model ids (routed via AI Gateway)
     "MODEL_RESEARCH": "deepseek-chat",
     "MODEL_SCRIPT": "gpt-4o",
-    "MODEL_SCENE": "gpt-4o",
-    "MODEL_QC": "gpt-4o",
-    "MODEL_QC_ESCALATION": "gpt-4o",
-    "MODEL_REVISION": "gpt-4o",
+    "MODEL_SCENE": "o1-mini",
+    "MODEL_QC": "o1-mini",
+    "MODEL_QC_ESCALATION": "o1-mini",
+    "MODEL_REVISION": "o1-mini",
     "DEFAULT_APPROVAL_MODE": "preview"
   }
 
