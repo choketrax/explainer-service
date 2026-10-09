@@ -22,7 +22,7 @@ const MAX_REJECTIONS = 3;
 const GATE_STATUS: Record<Gate, JobStatus> = {
   script: "awaiting_script_approval", storyboard: "awaiting_storyboard_approval", preview: "awaiting_preview_approval",
 };
-const STEP_CFG = { retries: { limit: 1, delay: "30 seconds", backoff: "constant" }, timeout: "90 minutes" } as const;
+const STEP_CFG = { retries: { limit: 5, delay: "30 seconds", backoff: "constant" }, timeout: "90 minutes" } as const;
 
 function gateAfter(mode: string, phase: Phase): Gate | null {
   if (mode === "script" && phase === "script") return "script";

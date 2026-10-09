@@ -79,12 +79,16 @@ export async function runStage(
       continue;
     }
     if (!statusRes.ok) {
-      console.log(`[STAGE ERROR] container status http ${statusRes.status}`); continue;
+      const text = await statusRes.text().catch(() => "");
+      console.log(`[STAGE ERROR] container status http ${statusRes.status}: ${text}`); 
+      if (statusRes.status === 404) {
+        throw new ExplainerError("INTERNAL", `Container lost stage state (404). VM likely restarted. Triggering retry.`, true);
+      }
+      continue;
     }
     const status = await statusRes.json() as any;
     if (status.state === "done") {
       result = status.result as StageResult;
-      // wipe the state for the next phase
       globalThis.currentStageStatus = null; 
       break;
     }
