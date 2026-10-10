@@ -101,6 +101,15 @@ function ensureProject(work, brief) {
 async function createProject(work, brief) {
   const { proj, created, slug } = ensureProject(work, brief);
   if (!created) return { proj };
+  // Rewrite new_project.sh to natively copy node_modules and avoid offline npm bugs
+  const npPath = path.join(A2E, "template/scripts/new_project.sh");
+  if (fs.existsSync(npPath)) {
+    let npScript = fs.readFileSync(npPath, "utf8");
+    npScript = npScript.replace(/--exclude node_modules /g, "");
+    npScript = npScript.replace(/npm install --silent && /g, "");
+    fs.writeFileSync(npPath, npScript);
+  }
+
   const r = await sh("zsh", [`${A2E}/template/scripts/new_project.sh`, proj, slug], { cwd: work, timeoutMs: 15 * 60 * 1000 });
   if (r.code !== 0) throw Object.assign(new Error(tail(r.err || r.out)), { code: "REMOTION_BUILD_FAILED" });
 
