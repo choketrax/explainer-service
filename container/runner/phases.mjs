@@ -242,7 +242,7 @@ export async function runPhase(work, body) {
       }
       case "preview": {
         const t = Date.now();
-        const cpus = require("os").cpus().length;
+        const cpus = (await import("node:os")).default.cpus().length;
         const r = await sh("zsh", [`${SCRIPTS_DIR_NAME}/preview.sh`, String(brief.previewSeconds || 25)], { cwd: proj, env: { CONC: String(cpus) }, timeoutMs: 40 * 60 * 1000 });
         const f = findNewest(`${proj}/renders`, /_preview_.*\.mp4$/);
         if (r.code !== 0 || !f) return fail(chromiumOr(r, "REMOTION_BUILD_FAILED"), tail(r.err || r.out), { usage });
@@ -250,7 +250,7 @@ export async function runPhase(work, body) {
       }
       case "final": {
         const t = Date.now();
-        const r = await sh("zsh", [`${SCRIPTS_DIR_NAME}/render.sh`], { cwd: proj, env: { VER: "v1", CONC: String(require('os').cpus().length) }, timeoutMs: 75 * 60 * 1000 });
+        const r = await sh("zsh", [`${SCRIPTS_DIR_NAME}/render.sh`], { cwd: proj, env: { VER: "v1", CONC: String((await import("node:os")).default.cpus().length) }, timeoutMs: 75 * 60 * 1000 });
         const f = findNewest(`${proj}/renders`, /_v1\.mp4$/);
         if (r.code !== 0 || !f) return fail(chromiumOr(r, "REMOTION_BUILD_FAILED"), tail(r.err || r.out), { usage });
         const thumb = path.join(proj, "renders", "thumbnail.jpg");
