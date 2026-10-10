@@ -19,7 +19,10 @@ RUN npm install -g @anthropic-ai/claude-code typescript remotion
 COPY vendor/anything2explainer /opt/a2e
 ARG UPSTREAM_COMMIT
 RUN echo "${UPSTREAM_COMMIT:-unpinned}" > /opt/a2e/.pinned_commit
-RUN sed -i '2s/^/mkdir -p \/work\/fakebin \&\& echo "#!\/bin\/sh\\nexit 0" > \/work\/fakebin\/npm \&\& chmod +x \/work\/fakebin\/npm \&\& export PATH=\/work\/fakebin:$PATH\n/' /opt/a2e/template/scripts/preview.sh && \
+RUN sed -i 's/npx remotion/node node_modules\/@remotion\/cli\/remotion-cli.js/g' /opt/a2e/template/scripts/preview.sh && \
+    sed -i 's/npx remotion/node node_modules\/@remotion\/cli\/remotion-cli.js/g' /opt/a2e/template/scripts/render.sh && \
+    sed -i 's/npx remotion/node node_modules\/@remotion\/cli\/remotion-cli.js/g' /opt/a2e/template/scripts/still.sh && \
+    sed -i '2s/^/mkdir -p \/work\/fakebin \&\& echo "#!\/bin\/sh\\nexit 0" > \/work\/fakebin\/npm \&\& chmod +x \/work\/fakebin\/npm \&\& export PATH=\/work\/fakebin:$PATH\n/' /opt/a2e/template/scripts/preview.sh && \
     sed -i '2s/^/mkdir -p \/work\/fakebin \&\& echo "#!\/bin\/sh\\nexit 0" > \/work\/fakebin\/npm \&\& chmod +x \/work\/fakebin\/npm \&\& export PATH=\/work\/fakebin:$PATH\n/' /opt/a2e/template/scripts/render.sh && \
     sed -i '2s/^/mkdir -p \/work\/fakebin \&\& echo "#!\/bin\/sh\\nexit 0" > \/work\/fakebin\/npm \&\& chmod +x \/work\/fakebin\/npm \&\& export PATH=\/work\/fakebin:$PATH\n/' /opt/a2e/template/scripts/still.sh
 # Pre-warm npm cache from the template so `npm install` in new projects works with egress disabled.
