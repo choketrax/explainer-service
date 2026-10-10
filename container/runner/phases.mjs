@@ -192,7 +192,7 @@ export async function runPhase(work, body) {
       case "scenes": {
         const r = await agent(proj, model, `${pre}\nPHASE: build scenes. Follow reference/agent-build-rules.md, style-guide.md and the shot primitives in src/. Implement every shot from the storyboard. When done, run 'npx tsc --noEmit' and fix all errors.${revision}`, { maxTurns: 300, timeoutMs: 75 * 60 * 1000 });
         add(r.usage);
-        const tsc = await sh("node", ["node_modules/typescript/bin/tsc", "--noEmit"], { cwd: proj, timeoutMs: 5 * 60 * 1000 });
+        const tsc = await sh("npx", ["tsc", "--noEmit"], { cwd: proj, timeoutMs: 5 * 60 * 1000 });
         if (tsc.code !== 0) {
           return fail("REMOTION_BUILD_FAILED", tail(tsc.err || tsc.out), { usage });
         }
