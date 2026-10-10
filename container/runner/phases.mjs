@@ -129,7 +129,7 @@ async function createProject(work, brief) {
     const sp = path.join(proj, SCRIPTS_DIR_NAME, script);
     if (fs.existsSync(sp)) {
       let scriptContent = fs.readFileSync(sp, "utf8");
-      scriptContent = scriptContent.replace(/npx remotion/g, "node node_modules/@remotion/cli/remotion-cli.js");
+      scriptContent = scriptContent.replace(/npx remotion/g, "remotion");
       scriptContent = scriptContent.replace(/^(#![^\r\n]+[\r\n]+)/, `$1export PATH="${fakeBin}:$PATH"\n`);
       fs.writeFileSync(sp, scriptContent);
     }
