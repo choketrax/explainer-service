@@ -102,6 +102,7 @@ async function createProject(work, brief) {
   const { proj, created, slug } = ensureProject(work, brief);
   if (!created) return { proj };
   const r = await sh("zsh", [`${A2E}/template/scripts/new_project.sh`, proj, slug], { cwd: work, timeoutMs: 15 * 60 * 1000 });
+  if (r.code !== 0) throw Object.assign(new Error(tail(r.err || r.out)), { code: "REMOTION_BUILD_FAILED" });
 
   // Language/background config per upstream guidance
   const cfg = path.join(proj, "src", "config.ts");
