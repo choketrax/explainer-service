@@ -107,6 +107,24 @@ async function createProject(work, brief) {
   // Language/background config per upstream guidance
   const cfg = path.join(proj, "src", "config.ts");
   let s = fs.readFileSync(cfg, "utf8");
+  
+  // Guarantee npx is bypassed and fakebins exist (bypassing all Dockerfile sed issues)
+  const fakeBin = path.join(work, "fakebin");
+  fs.mkdirSync(fakeBin, { recursive: true });
+  fs.writeFileSync(path.join(fakeBin, "npm"), "#!/bin/sh\nexit 0\n");
+  fs.writeFileSync(path.join(fakeBin, "npx"), "#!/bin/sh\nexit 0\n");
+  fs.chmodSync(path.join(fakeBin, "npm"), 0o755);
+  fs.chmodSync(path.join(fakeBin, "npx"), 0o755);
+  
+  for (const script of ["preview.sh", "render.sh", "still.sh"]) {
+    const sp = path.join(proj, SCRIPTS_DIR_NAME, script);
+    if (fs.existsSync(sp)) {
+      let scriptContent = fs.readFileSync(sp, "utf8");
+      scriptContent = scriptContent.replace(/npx remotion/g, "node node_modules/@remotion/cli/remotion-cli.js");
+      scriptContent = scriptContent.replace(/^(#![^\r\n]+[\r\n]+)/, `$1export PATH="${fakeBin}:$PATH"\n`);
+      fs.writeFileSync(sp, scriptContent);
+    }
+  }
   if (brief.language === "en") s = s.replace(/lang:\s*'zh'/, "lang: 'en'");
   s = s.replace(/bg:\s*'(dots|stars)'/, `bg: '${brief.background === "stars" ? "stars" : "dots"}'`);
   fs.writeFileSync(cfg, s);
