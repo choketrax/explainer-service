@@ -25,6 +25,7 @@ RUN sed -i 's/npx remotion/node node_modules\/@remotion\/cli\/remotion-cli.js/g'
     sed -i '2s/^/mkdir -p \/work\/fakebin \&\& echo "#!\/bin\/sh\\nexit 0" > \/work\/fakebin\/npm \&\& chmod +x \/work\/fakebin\/npm \&\& export PATH=\/work\/fakebin:$PATH\n/' /opt/a2e/template/scripts/preview.sh && \
     sed -i '2s/^/mkdir -p \/work\/fakebin \&\& echo "#!\/bin\/sh\\nexit 0" > \/work\/fakebin\/npm \&\& chmod +x \/work\/fakebin\/npm \&\& export PATH=\/work\/fakebin:$PATH\n/' /opt/a2e/template/scripts/render.sh && \
     sed -i '2s/^/mkdir -p \/work\/fakebin \&\& echo "#!\/bin\/sh\\nexit 0" > \/work\/fakebin\/npm \&\& chmod +x \/work\/fakebin\/npm \&\& export PATH=\/work\/fakebin:$PATH\n/' /opt/a2e/template/scripts/still.sh && \
+    sed -i 's/--exclude node_modules //g' /opt/a2e/template/scripts/new_project.sh && \
     sed -i 's/npm install --silent && npx tsc --noEmit && //g' /opt/a2e/template/scripts/new_project.sh
 # Pre-warm npm cache from the template so `npm install` in new projects works with egress disabled.
 RUN cd /opt/a2e/template && npm install --no-audit --no-fund && rm -rf node_modules/.cache
