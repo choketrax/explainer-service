@@ -104,6 +104,7 @@ async function createProject(work, brief) {
   const r = await sh("zsh", [`${A2E}/template/scripts/new_project.sh`, proj, slug], { cwd: work, timeoutMs: 15 * 60 * 1000 });
     try {
       fs.rmSync(path.join(proj, "node_modules"), { recursive: true, force: true });
+      fs.cpSync(path.join(A2E, "template", "node_modules"), path.join(proj, "node_modules"), { recursive: true });
     } catch (e) {}
   // Language/background config per upstream guidance
   const cfg = path.join(proj, "src", "config.ts");
@@ -193,7 +194,7 @@ export async function runPhase(work, body) {
       case "scenes": {
         const r = await agent(proj, model, `${pre}\nPHASE: build scenes. Follow reference/agent-build-rules.md, style-guide.md and the shot primitives in src/. Implement every shot from the storyboard. When done, run 'npx tsc --noEmit' and fix all errors.${revision}`, { maxTurns: 300, timeoutMs: 75 * 60 * 1000 });
         add(r.usage);
-        const tsc = await sh("npx", ["tsc", "--noEmit"], { cwd: proj, timeoutMs: 5 * 60 * 1000 });
+        const tsc = await sh("node", ["node_modules/typescript/bin/tsc", "--noEmit"], { cwd: proj, timeoutMs: 5 * 60 * 1000 });
         if (!r.ok) return fail(r.timedOut ? "LLM_TIMEOUT" : "REMOTION_BUILD_FAILED", tail(r.err), { usage });
         return done();
       }

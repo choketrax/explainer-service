@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@cloudflare/containers": "^0.0.30",
+    "@remotion/cli": "^4.0.507",
     "aws4fetch": "^1.0.20"
   },
   "devDependencies": {
